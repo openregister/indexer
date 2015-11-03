@@ -6,12 +6,12 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 interface TotalRegisterEntriesUpdateDAO extends DBConnectionDAO {
     String TOTAL_REGISTER_ENTRIES_TABLE = "register_entries_count";
 
-    @SqlUpdate("CREATE TABLE IF NOT EXISTS " + TOTAL_REGISTER_ENTRIES_TABLE + " (COUNT INTEGER)")
+    @SqlUpdate("create table if not exists " + TOTAL_REGISTER_ENTRIES_TABLE + " (count integer)")
     void ensureTotalEntriesInRegisterTableExists();
 
-    @SqlUpdate("INSERT INTO " + TOTAL_REGISTER_ENTRIES_TABLE + "(COUNT) SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM " + TOTAL_REGISTER_ENTRIES_TABLE + ")")
+    @SqlUpdate("insert into " + TOTAL_REGISTER_ENTRIES_TABLE + "(count) select 0 where not exists (select 1 from " + TOTAL_REGISTER_ENTRIES_TABLE + ")")
     void initialiseTotalEntriesInRegisterIfRequired();
 
-    @SqlUpdate("UPDATE " + TOTAL_REGISTER_ENTRIES_TABLE + " SET COUNT=COUNT+:noOfEntries")
+    @SqlUpdate("update " + TOTAL_REGISTER_ENTRIES_TABLE + " set count=count+:noofentries")
     void increaseTotalEntriesInRegisterCount(@Bind("noOfEntries") int noOfEntries);
 }
