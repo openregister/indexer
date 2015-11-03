@@ -10,18 +10,18 @@ import java.util.Set;
 
 @UseStringTemplate3StatementLocator
 interface CurrentKeysUpdateDAO extends DBConnectionDAO {
-    String CURRENT_KEYS_TABLE = "CURRENT_KEYS";
+    String CURRENT_KEYS_TABLE = "current_keys";
 
-    @SqlUpdate("CREATE TABLE IF NOT EXISTS " + CURRENT_KEYS_TABLE + " (KEY VARCHAR PRIMARY KEY, SERIAL_NUMBER INTEGER UNIQUE)")
+    @SqlUpdate("create table if not exists " + CURRENT_KEYS_TABLE + " (key varchar primary key, serial_number integer unique)")
     void ensureCurrentKeysTableExists();
 
-    @SqlUpdate("UPDATE " + CURRENT_KEYS_TABLE + " SET SERIAL_NUMBER=:serial_number WHERE KEY=:key")
+    @SqlUpdate("update " + CURRENT_KEYS_TABLE + " set serial_number=:serial_number where key=:key")
     int updateSerialNumber(@Bind("serial_number") int serial_number, @Bind("key") String key);
 
-    @SqlQuery("SELECT KEY FROM " + CURRENT_KEYS_TABLE + " WHERE KEY IN (<keys>)")
+    @SqlQuery("select key from " + CURRENT_KEYS_TABLE + " where key in (<keys>)")
     Set<String> getExistingKeys(@BindIn("keys") Iterable<String> keys);
 
-    @SqlUpdate("INSERT INTO " + CURRENT_KEYS_TABLE + "(SERIAL_NUMBER, KEY) VALUES(:serial_number, :key)")
+    @SqlUpdate("insert into " + CURRENT_KEYS_TABLE + "(serial_number, key) values(:serial_number, :key)")
     void insertNewKey(@Bind("serial_number") int serial_number, @Bind("key") String key);
 }
 
