@@ -146,7 +146,7 @@ public class IndexerTaskTest {
             resultSet.next();
             assertThat(resultSet.getInt("count"), CoreMatchers.equalTo(expectedEntries));
         }
-        try (ResultSet resultSet = statement.executeQuery("select leaf_input from ordered_entry_index where serial_number=" + expectedEntries)) {
+        try (ResultSet resultSet = statement.executeQuery("select leaf_input from ordered_entry_index where serial_number=" + (expectedEntries-1))) {
             resultSet.next();
             assertFalse(resultSet.getString("leaf_input").isEmpty());
         }

@@ -42,7 +42,7 @@ public class CTDataSourceTest {
         assertThat(result.size(), equalTo(2));
 
         Entry entry1 = result.get(0);
-        assertThat(entry1.serial_number, equalTo(11));
+        assertThat(entry1.serial_number, equalTo(10));
 
         JsonNode node1 = JsonUtils.fromBytesToJsonNode(entry1.contents);
         byte[] expectedItemBytes1 = "{ \"owner\": \"Veterinary Medicines Directorate\", \"end-date\": \"\", \"government-domain\": \"ami.gov.uk\" }".getBytes();
@@ -50,7 +50,7 @@ public class CTDataSourceTest {
         assertThat(node1.get("hash").textValue(), equalTo(SHA256Hash.createHash(expectedItemBytes1)));
 
         Entry entry2 = result.get(1);
-        assertThat(entry2.serial_number, equalTo(12));
+        assertThat(entry2.serial_number, equalTo(11));
 
         JsonNode node2 = JsonUtils.fromBytesToJsonNode(entry2.contents);
         byte[] expectedItemBytes2 = "{ \"owner\": \"Andover Town Council\", \"end-date\": \"\", \"government-domain\": \"andover-tc.gov.uk\" }".getBytes();
