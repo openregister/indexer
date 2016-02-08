@@ -31,7 +31,7 @@ public class CTDataSource implements DataSource {
                 return ctServer.getEntries(from, lastEntryNumber - 1 )
                         .entries
                         .stream()
-                        .map(ctEntryLeaf -> createEntry(atomicInteger.incrementAndGet(), ctEntryLeaf.getPayload(), ctEntryLeaf.getLeafInput()))
+                        .map(ctEntryLeaf -> createEntry(atomicInteger.getAndIncrement(), ctEntryLeaf.getPayload(), ctEntryLeaf.getLeafInput()))
                         .collect(Collectors.toList());
             }
             return new ArrayList<>();
