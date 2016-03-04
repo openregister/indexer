@@ -3,10 +3,8 @@ package uk.gov.indexer.dao;
 import com.amazonaws.util.json.Jackson;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import org.postgresql.util.PSQLException;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.TransactionIsolationLevel;
-import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
 import org.skife.jdbi.v2.sqlobject.Transaction;
 import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import org.slf4j.Logger;
@@ -15,7 +13,6 @@ import uk.gov.indexer.ctserver.SignedTreeHead;
 import uk.gov.indexer.fetchers.FetchResult;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -35,12 +32,6 @@ public abstract class DestinationDBUpdateDAO implements GetHandle, DBConnectionD
         indexedEntriesUpdateDAO = handle.attach(IndexedEntriesUpdateDAO.class);
 
         indexedEntriesUpdateDAO.ensureEntryTablesInPlace();
-
-        try {
-            indexedEntriesUpdateDAO.addColumnLeafInputInTable();
-        } catch (UnableToExecuteStatementException e) {
-            ignoreOnlyDuplicateColumnPGErrorStateCodeWhichIsThrownWhenTryToAddAColumnInTableWhichAlreadyExists(e);
-        }
 
         if (!indexedEntriesUpdateDAO.indexedEntriesIndexExists()) {
             indexedEntriesUpdateDAO.createIndexedEntriesIndex();
@@ -81,28 +72,18 @@ public abstract class DestinationDBUpdateDAO implements GetHandle, DBConnectionD
     }
 
     private void upsertInCurrentKeysTable(String registerName, List<OrderedEntryIndex> orderedEntryIndexes) {
-        List<String> allKeys = Lists.transform(orderedEntryIndexes, e -> getKey(registerName, e.getEntry()));
-
-        Set<String> existingKeys = currentKeysUpdateDAO.getExistingKeys(allKeys);
-
-        orderedEntryIndexes.forEach(e -> {
-                    String key = getKey(registerName, e.getEntry());
-                    if (existingKeys.contains(key)) {
-                        currentKeysUpdateDAO.updateSerialNumber(e.getSerial_number(), key);
-                    } else {
-                        currentKeysUpdateDAO.insertNewKey(e.getSerial_number(), key);
-                        existingKeys.add(key);
-                    }
-                }
-        );
+        currentKeysUpdateDAO.removeRecordWithKeys(Lists.transform(orderedEntryIndexes, e -> getKey(registerName, e.getEntry())));
+        currentKeysUpdateDAO.writeCurrentKeys(extractNewCurrentKeys(registerName, orderedEntryIndexes));
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    private void ignoreOnlyDuplicateColumnPGErrorStateCodeWhichIsThrownWhenTryToAddAColumnInTableWhichAlreadyExists(UnableToExecuteStatementException e) {
-        if (e.getCause() instanceof PSQLException && ((PSQLException) e.getCause()).getSQLState().equals("42701")) {
-        } else {
-            throw e;
-        }
+    private Iterable<CurrentKey> extractNewCurrentKeys(String registerName, List<OrderedEntryIndex> orderedEntryIndexes) {
+        return orderedEntryIndexes
+                .stream()
+                .collect(Collectors.toMap(e -> getKey(registerName, e.getEntry()), OrderedEntryIndex::getSerial_number))
+                .entrySet()
+                .stream()
+                .map(e -> new CurrentKey(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     private String getKey(String registerName, String entry) {
