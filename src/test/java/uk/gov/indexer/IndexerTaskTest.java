@@ -1,7 +1,6 @@
 package uk.gov.indexer;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.sun.glass.ui.EventLoop;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IndexerTaskTest {
+    private static final String PGPORT = Optional.ofNullable(System.getenv("PGPORT")).orElse("5432");
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8090);
 
@@ -44,8 +44,8 @@ public class IndexerTaskTest {
                 recreateEntriesTable(mintStatement);
                 dropReadApiTables(presentationStatement);
 
-                DBI mintDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_mint?user=postgres");
-                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_presentation?user=postgres");
+                DBI mintDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_mint");
+                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_presentation");
 
                 SourceDBQueryDAO sourceDBQueryDAO = mintDbi.open().attach(SourceDBQueryDAO.class);
                 DestinationDBUpdateDAO destinationDBUpdateDAO = presentationDbi.open().attach(DestinationDBUpdateDAO.class);
@@ -105,8 +105,8 @@ public class IndexerTaskTest {
                 recreateEntriesTable(mintStatement);
                 dropReadApiTables(presentationStatement);
 
-                DBI mintDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_mint?user=postgres");
-                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_presentation?user=postgres");
+                DBI mintDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_mint");
+                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_presentation");
 
                 SourceDBQueryDAO sourceDBQueryDAO = mintDbi.open().attach(SourceDBQueryDAO.class);
                 DestinationDBUpdateDAO destinationDBUpdateDAO = presentationDbi.open().attach(DestinationDBUpdateDAO.class);

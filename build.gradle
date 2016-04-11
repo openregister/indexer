@@ -18,6 +18,12 @@ dependencies {
     testCompile junit, mockito, wiremock
 }
 
+test {
+  testLogging {
+    exceptionFormat = 'full'
+  }
+}
+
 jar.baseName = "indexer"
 
 jar {

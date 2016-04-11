@@ -15,11 +15,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IndexEntryItemTaskTest {
+    private static final String PGPORT = Optional.ofNullable(System.getenv("PGPORT")).orElse("5432");
+
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8090);
 
@@ -32,8 +35,8 @@ public class IndexEntryItemTaskTest {
                 recreateEntryAndItemTables(mintStatement);
                 dropReadApiTables(presentationStatement);
 
-                DBI mintDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_mint?user=postgres");
-                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:5432/test_indexer_presentation?user=postgres");
+                DBI mintDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_mint");
+                DBI presentationDbi = new DBI("jdbc:postgresql://localhost:" + PGPORT + "/test_indexer_presentation");
 
                 SourceDBQueryDAO sourceDBQueryDAO = mintDbi.open().attach(SourceDBQueryDAO.class);
                 DestinationDBUpdateDAO_NewSchema destinationDBUpdateDAO = presentationDbi.open().attach(DestinationDBUpdateDAO_NewSchema.class);
@@ -107,15 +110,17 @@ public class IndexEntryItemTaskTest {
 
     private Connection createMintConnection() throws SQLException {
         PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setPortNumber(Integer.parseInt(PGPORT));
+        dataSource.setUser(System.getenv("USER"));
+        dataSource.setPassword("");
         dataSource.setDatabaseName("test_indexer_mint");
-        dataSource.setUser("postgres");
         return dataSource.getConnection();
     }
 
     private Connection createPresentationConnection() throws SQLException {
         PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setPortNumber(Integer.parseInt(PGPORT));
         dataSource.setDatabaseName("test_indexer_presentation");
-        dataSource.setUser("postgres");
         return dataSource.getConnection();
     }
 }
